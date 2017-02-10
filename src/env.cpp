@@ -1,4 +1,4 @@
-#include "environ.hpp"
+#include "env.hpp"
 // Constructor that produces a random environment with beta=1
 Env::Env(State state) : state(state){
 	beta=1.0;
@@ -28,5 +28,6 @@ Env::Env(State state) : state(state){
 }
 
 Env::~Env(){
+	printf("Destroying Environment\n");
 	delete rdist;
 }
