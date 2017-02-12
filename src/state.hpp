@@ -3,8 +3,6 @@
 #include <vector>
 #include <random>
 class State{
-	// contains state sequence
-	std::vector<int> seq;
 	// contains variable positions
 	std::vector<int> varpos;
 	// RNG generator
@@ -17,10 +15,14 @@ class State{
 	unsigned long long eq_tries, eq_acc, batch_tries, batch_acc, all_tries, all_acc;
 	public:
 		State(int,int,int);
+		State(const State&);
 		~State();
 		void propose_move();
 		// variables for proposed moves
 		int pos_prop,color_prop = 0;
 		int len,q;
+		// contains state sequence
+		std::vector<int> seq;
+
 };
 #endif
