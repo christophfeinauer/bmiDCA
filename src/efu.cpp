@@ -37,32 +37,32 @@ double Pairwise::get_energy(State& state){
 	double en=0;
 	long int l=0;
 	for (int i=0; i<len; ++i){
-		en+=fields[state.seq[i]][i];
+		en-=fields[state.seq[i]][i];
 		for (int j=i+1; j<len; ++j)
-			en+=coup[state.seq[i]][state.seq[j]][l];
-		l++;
+			en-=coup[state.seq[i]][state.seq[j]][++l];
 	}
 	return en;
 }
 
 int ind2(int i, int j,int N){
-	return j - 1 + i*(2*N-3-i)/2
+	return j - 1 + i*(2*N-3-i)/2;
 }
 
 double Pairwise::get_move_endiff(State& state){
-	double endiff=fields[state.seq[i]][i] - fields[state.color_prop][i];
+	int i = state.pos_prop;
+	double endiff=fields[ state.seq[i] ][ i ] - fields[ state.color_prop ][ i ];
 	// we start at the l-index for (0,i) 
 	// we add state.len-2-state.pos_prop to go from (i,j) to (i+1,j) for any i<j 
-	int l=ind2(0,state.pos_prop);
-	for (int j=0; j<state.pos_prop, ++j){
-		endiff+=coup[state.seq[j]][state.seq[state.pos_prop]][l];
-		l+=state.len-2-state.pos_prop;
+	int l=ind2(0,i,state.len);
+	for (int j=0; j<i; ++j){
+		endiff+=coup[state.seq[j]][state.seq[i]][l];
+		l+=state.len-2-i;
 	}
 	// we start at the l-index for (i,i+1)
 	// add 1 to the l-index of (i,j) to (i,j+1)
-	int l=ind2(state.pos_prop,state.pos_prop+1);
-	for (int j=state.pos_prop+1; j<N-1, ++j){
-		endiff+=coup[state.seq[state.pos_prop]][state.seq[j]][l];
+	l=ind2(i,i+1,state.len);
+	for (int j=i+1; j<state.len-1; ++j){
+		endiff+=coup[state.seq[i]][state.seq[j]][l];
 		l++;
 	}
 	return endiff;

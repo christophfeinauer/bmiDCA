@@ -21,8 +21,9 @@ class Pairwise : public Efu{
 	int q;
 	public:
 		double get_energy(State& state);
-		double get_move_energy_diff(State& state);
+		double get_move_endiff(State& state);
 		Pairwise(int, int);
+		Pairwise(int,int,tens3,tens2);
 
 };
 #endif

@@ -10,7 +10,7 @@ int main(void){
 	State state(len,q,rand());
 	Pairwise pw = Pairwise(len,q);
 	Env env = Env(&state,&pw);
-	printf("%lf\n",pw.get_energy(state));
+	//printf("%lf\n",pw.get_energy(state));
 	
 	return 0;
 }
