@@ -45,10 +45,26 @@ double Pairwise::get_energy(State& state){
 	return en;
 }
 
+int ind2(int i, int j,int N){
+	return j - 1 + i*(2*N-3-i)/2
+}
+
 double Pairwise::get_move_endiff(State& state){
 	double endiff=fields[state.seq[i]][i] - fields[state.color_prop][i];
-	for (int j=0; i<state.pos_prop, ++j)	
-		endiff+=coup
+	// we start at the l-index for (0,i) 
+	// we add state.len-2-state.pos_prop to go from (i,j) to (i+1,j) for any i<j 
+	int l=ind2(0,state.pos_prop);
+	for (int j=0; j<state.pos_prop, ++j){
+		endiff+=coup[state.seq[j]][state.seq[state.pos_prop]][l];
+		l+=state.len-2-state.pos_prop;
+	}
+	// we start at the l-index for (i,i+1)
+	// add 1 to the l-index of (i,j) to (i,j+1)
+	int l=ind2(state.pos_prop,state.pos_prop+1);
+	for (int j=state.pos_prop+1; j<N-1, ++j){
+		endiff+=coup[state.seq[state.pos_prop]][state.seq[j]][l];
+		l++;
+	}
 	return endiff;
 }
 

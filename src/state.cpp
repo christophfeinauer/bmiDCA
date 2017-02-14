@@ -17,7 +17,6 @@ State::State(int len, int q, int seed) : len(len), q(q){
 }
 
 State::State(const State &that){
-	printf("Copy constructor called\n");
 	pos_dist = new std::uniform_int_distribution<int>(0,varpos.size()-1);
 	*pos_dist = *that.pos_dist;
 	color_dist = new std::uniform_int_distribution<int>(0,q-1);
