@@ -1,5 +1,9 @@
 #include "efu.hpp"
 
+Pairwise::Pairwise(int len, int q, tens3 coup, tens2 fields ) : len(len), q(q), coup(coup), fields(fields) {
+	
+}
+
 // constructor using random couplings
 Pairwise::Pairwise(int len, int q) : len(len), q(q) {
 	
@@ -41,16 +45,11 @@ double Pairwise::get_energy(State& state){
 	return en;
 }
 
-double Pairwise::get_move_energy_diff(State& state){
-	double en=0;
-	long int l=0;
-	for (int i=0; i<len; ++i){
-		en+=fields[state.seq[i]][i];
-		for (int j=i+1; j<len; ++j)
-			en+=coup[state.seq[i]][state.seq[j]][l];
-		l++;
-	}
-	return en;
+double Pairwise::get_move_endiff(State& state){
+	double endiff=fields[state.seq[i]][i] - fields[state.color_prop][i];
+	for (int j=0; i<state.pos_prop, ++j)	
+		endiff+=coup
+	return endiff;
 }
 
 
