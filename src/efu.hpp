@@ -10,7 +10,7 @@ typedef std::vector<std::vector<double> > tens2;
 class Efu{
 	public:
 		virtual double get_energy(State& state) = 0;
-		virtual double get_move_energy_diff(State& state) = 0;
+		virtual double get_move_endiff(State& state) = 0;
 };
 
 
@@ -22,7 +22,7 @@ class Pairwise : public Efu{
 	public:
 		double get_energy(State& state);
 		double get_move_endiff(State& state);
-		Pairwise(int, int);
+		Pairwise(int, int,int);
 		Pairwise(int,int,tens3,tens2);
 
 };

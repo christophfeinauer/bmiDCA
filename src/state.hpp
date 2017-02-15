@@ -18,6 +18,7 @@ class State{
 		State(const State&);
 		~State();
 		void propose_move();
+		void make_move();
 		// variables for proposed moves
 		int pos_prop,color_prop = 0;
 		int len,q;

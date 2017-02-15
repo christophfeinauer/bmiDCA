@@ -1,5 +1,5 @@
 CXX=g++
-CPPFLAGS=-std=c++11
+CPPFLAGS=-std=c++11 -g
 
 dca_sampler: dca_sampler.o state.o env.o efu.o
 	$(CXX) $(CPPFLAGS) -o dca_sampler dca_sampler.o state.o env.o efu.o

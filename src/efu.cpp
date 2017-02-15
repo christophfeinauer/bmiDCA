@@ -5,7 +5,7 @@ Pairwise::Pairwise(int len, int q, tens3 coup, tens2 fields ) : len(len), q(q), 
 }
 
 // constructor using random couplings
-Pairwise::Pairwise(int len, int q) : len(len), q(q) {
+Pairwise::Pairwise(int len, int q, int seed) : len(len), q(q) {
 	
 	// Resize parameter vectors
 	fields.resize(q);
@@ -21,6 +21,7 @@ Pairwise::Pairwise(int len, int q) : len(len), q(q) {
 	}
 	std::uniform_real_distribution<double> rdist(0.0,1.0);
 	std::mt19937_64 mtgen;
+	mtgen.seed(seed);
 	// Random fields
 	for (int c=0; c<q; ++c)
 		for (int n=0; n<len; ++n)

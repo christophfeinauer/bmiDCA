@@ -32,3 +32,7 @@ void State::propose_move(){
 	pos_prop = (*pos_dist)(mtgen);
 	color_prop = (*color_dist)(mtgen);
 }
+
+void State::make_move(){
+	seq[pos_prop] = color_prop;
+}

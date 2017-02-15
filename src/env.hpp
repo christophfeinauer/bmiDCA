@@ -14,6 +14,8 @@ class Env{
 	std::uniform_real_distribution<double> * rdist;
 	public:	
 		Env(State*, Efu*);
+		bool decide_move();
+		bool step();
 		~Env();
 };
 #endif
