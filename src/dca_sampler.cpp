@@ -9,15 +9,10 @@ int main(void){
 	int q=21;
 	State state(len,q,rand());
 	Pairwise pw = Pairwise(len,q,rand());
-	Env env = Env(&state,&pw);
-	double n,o;
-	for (int i=0; i<10000; ++i){
+	Env env = Env(&state,&pw, rand());
+	for (int i=0; i<1000000; ++i){
 		env.step();
-		n = pw.get_energy(state);
-		if (n!=o){
-			printf("%lf\n",n);
-			o=n;
-		}
 	}
+	printf("%lf\n",state.acc());
 	return 0;
 }

@@ -12,13 +12,14 @@ class State{
 	// RNG that chooses color in a move
 	std::uniform_int_distribution<int> * color_dist;
 	// Keep track of steps
-	unsigned long long eq_tries, eq_acc, batch_tries, batch_acc, all_tries, all_acc;
+	unsigned long long moves_proposed = 0, moves_made = 0;
 	public:
 		State(int,int,int);
 		State(const State&);
 		~State();
 		void propose_move();
 		void make_move();
+		double acc();
 		// variables for proposed moves
 		int pos_prop,color_prop = 0;
 		int len,q;

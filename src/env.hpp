@@ -13,7 +13,7 @@ class Env{
 	//Becomes RNG for [0,1]
 	std::uniform_real_distribution<double> * rdist;
 	public:	
-		Env(State*, Efu*);
+		Env(State*, Efu*, int);
 		bool decide_move();
 		bool step();
 		~Env();

@@ -2,6 +2,8 @@
 #define EFU_h
 #include "state.hpp"
 #include <vector>
+#include <string>
+#include "hdf5.h"
 typedef std::vector<std::vector<std::vector<double> > > tens3;
 typedef std::vector<std::vector<double> > tens2;
 
@@ -24,6 +26,7 @@ class Pairwise : public Efu{
 		double get_move_endiff(State& state);
 		Pairwise(int, int,int);
 		Pairwise(int,int,tens3,tens2);
+		Pairwise(std::string,std::string,std::string);
 
 };
 #endif
