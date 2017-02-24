@@ -1,11 +1,33 @@
 #include "efu.hpp"
 
+#include "hdf5.h"
+#include <stdexcept>
+#include <string>
+
+struct ReadError : public std::runtime_error{
+	ReadError(std::string const & message)
+		: std::runtime_error(message)
+	{}
+};
+
 Pairwise::Pairwise(int len, int q, tens3 coup, tens2 fields ) : len(len), q(q), coup(coup), fields(fields) {
 	
 }
 
 Pairwise::Pairwise(std::string fn, std::string coup_name, std::string fields_name){
 	hid_t hfid = H5Fopen(fn.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);		
+	hid_t dset = H5Dopen1(hfid,coup_name.c_str());
+	hid_t dspace = H5Dget_space(dset);
+	int ndims = H5Sget_simple_extent_ndims(dspace);
+	if (ndims!=3)
+		throw ReadError("HDF5Error: Dimensions of couplings ≠ 3");
+	std::vector<hsize_t> dims(ndims,0);
+	H5Sget_simple_extent_dims(dspace,&dims[0],NULL);
+	for (int i=0; i<3; ++i)
+		printf("%llu\n",dims[i]);
+	H5Sclose(dspace);
+	H5Dclose(dset);
+	H5Fclose(hfid);
 }
 
 // constructor using random couplings
