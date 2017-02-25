@@ -18,9 +18,9 @@ class Efu{
 class Pairwise : public Efu{
 	tens3 coup;
 	tens2 fields;
-	int len;
-	int q;
 	public:
+		int len;
+		int q;
 		double get_energy(State& state);
 		double get_move_endiff(State& state);
 		Pairwise(int, int,int);

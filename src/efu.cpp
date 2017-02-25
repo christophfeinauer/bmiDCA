@@ -4,6 +4,8 @@
 #include <stdexcept>
 #include <string>
 
+typedef long long unsigned llu;
+
 struct ReadError : public std::runtime_error{
 	ReadError(std::string const & message)
 		: std::runtime_error(message)
@@ -14,19 +16,74 @@ Pairwise::Pairwise(int len, int q, tens3 coup, tens2 fields ) : len(len), q(q), 
 	
 }
 
+//ATTENTION: This function expects a qxqxbinomail(N,2) column-major memory layout for couplings
 Pairwise::Pairwise(std::string fn, std::string coup_name, std::string fields_name){
 	hid_t hfid = H5Fopen(fn.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);		
+	// read couplings
 	hid_t dset = H5Dopen1(hfid,coup_name.c_str());
 	hid_t dspace = H5Dget_space(dset);
-	int ndims = H5Sget_simple_extent_ndims(dspace);
-	if (ndims!=3)
+	int ndims_coup = H5Sget_simple_extent_ndims(dspace);
+	if (ndims_coup!=3)
 		throw ReadError("HDF5Error: Dimensions of couplings ≠ 3");
-	std::vector<hsize_t> dims(ndims,0);
-	H5Sget_simple_extent_dims(dspace,&dims[0],NULL);
-	for (int i=0; i<3; ++i)
-		printf("%llu\n",dims[i]);
+	printf("Reading couplings from HDF5 data..."); 
+	std::vector<hsize_t> dims_coup(ndims_coup,0);
+	H5Sget_simple_extent_dims(dspace,&dims_coup[0],NULL);
+	llu lenbn2 = (llu) dims_coup[0];
+	q = (int) dims_coup[1];
+	len = (int) (1+sqrt(1+8*lenbn2))/2;
+	if (dims_coup[2] != q )
+		throw ReadError("HDF5Error: Dimensions not consistent");
+	llu ndata = q*q*lenbn2;
+	double * temp_data_coup;
+	temp_data_coup = new double[ndata];
+	H5Dread(dset,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT,temp_data_coup);
+	coup.resize(q);
+	for (int a=0; a<q; ++a){
+		coup[a].resize(q);
+		for (int b=0; b<q; ++b)
+			coup[a][b].resize(lenbn2);
+	}
+
+	llu l = 0;
+	llu k = 0;
+	for (int i=0; i<len; ++i)	
+		for (int j=i+1; j<len; ++j){
+			for (int a=0; a<q; ++a)
+				for (int b=0; b<q;++b)
+					coup[a][b][l] = temp_data_coup[k++];		
+			l++;
+	}
+	delete temp_data_coup;
 	H5Sclose(dspace);
 	H5Dclose(dset);
+	printf("done\n");
+	// read fields
+	dset = H5Dopen1(hfid,fields_name.c_str());
+	dspace = H5Dget_space(dset);
+	int ndims_fields = H5Sget_simple_extent_ndims(dspace);
+	if (ndims_fields!=2)
+		throw ReadError("HDF5Error: Dimensions of fields ≠ 2");
+	printf("Reading couplings from HDF5 data..."); 
+	std::vector<hsize_t> dims_fields(ndims_fields,0);
+	H5Sget_simple_extent_dims(dspace,&dims_fields[0],NULL);
+	if (dims_fields[0] != len || dims_fields[1] != q)
+		throw ReadError("HDF5Eror: Coupling- and fields-dimensions not consistent");
+	ndata = (llu) q*len;
+	double * temp_data_fields;
+	temp_data_fields = new double[ndata];
+	H5Dread(dset,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT,temp_data_fields);
+	fields.resize(q);
+	for (int a=0; a<q; ++a)
+		fields[a].resize(len);
+
+	k = 0;
+	for (int i=0; i<len; ++i)	
+		for (int a=0; a<q; ++a)
+			fields[a][i] = temp_data_fields[k++];		
+	delete temp_data_fields;
+	H5Sclose(dspace);
+	H5Dclose(dset);
+	printf("done\n");
 	H5Fclose(hfid);
 }
 
