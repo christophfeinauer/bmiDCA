@@ -19,10 +19,12 @@ class State{
 		~State();
 		void propose_move();
 		void make_move();
+		void reset_moves();
 		double acc();
 		// variables for proposed moves
 		int pos_prop,color_prop = 0;
 		int len,q;
+		unsigned long long moves_proposed_total = 0, moves_made_total = 0;
 		// contains state sequence
 		std::vector<int> seq;
 

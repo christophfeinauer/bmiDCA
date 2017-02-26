@@ -36,9 +36,16 @@ void State::propose_move(){
 	pos_prop = (*pos_dist)(mtgen);
 	color_prop = (*color_dist)(mtgen);
 	moves_proposed++;
+	moves_proposed_total++;
 }
 
 void State::make_move(){
 	seq[pos_prop] = color_prop;
 	moves_made++;
+	moves_made_total++;
+}
+
+void State::reset_moves(){
+	moves_made = 0;
+	moves_proposed = 0;
 }

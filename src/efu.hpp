@@ -1,5 +1,5 @@
 #ifndef EFU_H
-#define EFU_h
+#define EFU_H
 #include "state.hpp"
 #include <vector>
 #include <string>

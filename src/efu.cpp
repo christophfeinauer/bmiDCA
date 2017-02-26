@@ -63,7 +63,7 @@ Pairwise::Pairwise(std::string fn, std::string coup_name, std::string fields_nam
 	int ndims_fields = H5Sget_simple_extent_ndims(dspace);
 	if (ndims_fields!=2)
 		throw ReadError("HDF5Error: Dimensions of fields ≠ 2");
-	printf("Reading couplings from HDF5 data..."); 
+	printf("Reading fields from HDF5 data..."); 
 	std::vector<hsize_t> dims_fields(ndims_fields,0);
 	H5Sget_simple_extent_dims(dspace,&dims_fields[0],NULL);
 	if (dims_fields[0] != len || dims_fields[1] != q)

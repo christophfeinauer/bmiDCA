@@ -5,7 +5,6 @@
 #include <vector>
 class Env{
 	double beta;
-	State * state;
 	Efu  * efu;
 
 	//RNG generator
@@ -13,9 +12,11 @@ class Env{
 	//Becomes RNG for [0,1]
 	std::uniform_real_distribution<double> * rdist;
 	public:	
+		State * state;
 		Env(State*, Efu*, int);
 		bool decide_move();
 		bool step();
+		double get_energy() {return efu->get_energy(*state);};
 		~Env();
 };
 #endif
