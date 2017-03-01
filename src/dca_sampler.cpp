@@ -13,7 +13,7 @@ int main(void){
 	Env env = Env(&state,&pw, rand());
 
 	std::string ofile = "test";
-	MCMCRun mcrun(&env,50000,1000000,100000,ofile);
+	MCMCRun mcrun(&env,10000,1000000,100000,ofile);
 	mcrun.run();
 	return 0;
 }

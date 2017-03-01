@@ -2,8 +2,9 @@
 #define MCRUN_H
 #include "env.hpp"
 typedef long long int llu;
-typedef std::vector<std::vector<std::vector<double> > > tens3;
-typedef std::vector<std::vector<double> > tens2;
+typedef boost::multi_array<double,3> tens3;
+typedef boost::multi_array<double,2> tens2;
+
 
 class MCRun{
 	public:
@@ -25,6 +26,6 @@ class MCMCRun : MCRun {
 		MCMCRun(Env*,llu, llu , llu, std::string);
 		void run();
 		void write_state_to_file();
-		void write_state_to_f_tens3();
+		void write_state_f_tens3();
 };
 #endif

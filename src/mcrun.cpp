@@ -23,12 +23,12 @@ void MCMCRun::run(){
 			
 }
 
-void write_state_f_tens3(){
+void MCMCRun::write_state_f_tens3(){
 	int len = env->state->len;
 	llu l=0;
 	for (int i=0; i<len; ++i)
 		for (int j=i+1; j<len; ++j)
-			f_tens3[env->state->seq[i]][env->state->seq[j]][l++]++;
+			(*f_tens3)[env->state->seq[i]][env->state->seq[j]][l++]+=1.0f;
 }
 
 void MCMCRun::write_state_to_file(){
