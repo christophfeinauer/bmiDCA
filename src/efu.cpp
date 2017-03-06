@@ -16,14 +16,13 @@ Pairwise::Pairwise(int len, int q, tens3_ptr coup_ptr, tens2_ptr fields_ptr ) : 
 	
 }
 
-//ATTENTION: This function expects a qxqxbinomail(N,2) column-major memory layout for couplings
+//ATTENTION: This function expects a qxqxbinomial(N,2) column-major memory layout for couplings
 Pairwise::Pairwise(std::string fn, std::string coup_name, std::string fields_name){
 	hid_t hfid = H5Fopen(fn.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);		
 	// read couplings
 	hid_t dset = H5Dopen1(hfid,coup_name.c_str());
 	hid_t dspace = H5Dget_space(dset);
 	int ndims_coup = H5Sget_simple_extent_ndims(dspace);
-	printf("%d\n",ndims_coup);
 	if (ndims_coup!=3)
 		throw ReadError("HDF5Error: Dimensions of couplings ≠ 3");
 	printf("Reading couplings from HDF5 data..."); 
@@ -57,8 +56,8 @@ Pairwise::Pairwise(std::string fn, std::string coup_name, std::string fields_nam
 	H5Dread(dset,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT,fields_ptr->data());
 	H5Sclose(dspace);
 	H5Dclose(dset);
-	printf("done\n");
 	H5Fclose(hfid);
+	printf("done\n");
 }
 
 // constructor using random couplings
@@ -90,7 +89,7 @@ Pairwise::Pairwise(std::string fn, std::string coup_name, std::string fields_nam
 //
 //}
 
-double Pairwise::get_energy(State& state){
+double Pairwise::get_energy(State const & state){
 	double en=0.0;
 	long int l=0;
 	for (int i=0; i<len; ++i){
@@ -103,15 +102,14 @@ double Pairwise::get_energy(State& state){
 	return en;
 }
 
-int ind2(int i, int j,int N){
+inline int ind2(int i, int j,int N){
 	return j - 1 + i*(2*N-3-i)/2;
 }
 
-double Pairwise::get_move_endiff(State& state){
+double Pairwise::get_move_endiff(State const & state){
 	tens3& coup = *coup_ptr;
 	tens2& fields = *fields_ptr;
 	int i = state.pos_prop;
-	//printf("%d\n",i);
 	double endiff=fields[ state.seq[i] ][ i ] - fields[ state.color_prop ][ i ];
 	// we start at the l-index for (0,i) 
 	// we add state.len-2-state.pos_prop to go from (j,i) to (j+1,i) for any j<i

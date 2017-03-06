@@ -1,5 +1,5 @@
 CXX=g++
-CPPFLAGS= -L/usr/lib/x86_64-linux-gnu -std=c++11 -g -O3
+CPPFLAGS= -L/usr/lib/x86_64-linux-gnu -std=c++11 -fopenmp -g -O3
 CFLAGS=-I/usr/include/hdf5/serial 
 LIB = -lhdf5_serial
 

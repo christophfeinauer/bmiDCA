@@ -2,7 +2,7 @@
 #include <time.h>
 #include "state.hpp"
 
-State::State(int len, int q, int seed) : len(len), q(q){
+State::State(int len, int q, int seed) : len(len), q(q), pos_dist(0,len-1), color_dist(0,q-1){
 	seq.resize(len,0);
 	// Standard constructor: All positions are variable
 	varpos.resize(len);
@@ -10,22 +10,6 @@ State::State(int len, int q, int seed) : len(len), q(q){
 		varpos[pos]=pos;
 	// Seed the generator
 	mtgen.seed(seed);
-	// RNG that proposes position
-	pos_dist = new std::uniform_int_distribution<int>(0,len-1);
-	// RNG that proposes color
-	color_dist = new std::uniform_int_distribution<int>(0,q-1);
-}
-
-State::State(const State &that){
-	pos_dist = new std::uniform_int_distribution<int>(0,varpos.size()-1);
-	*pos_dist = *that.pos_dist;
-	color_dist = new std::uniform_int_distribution<int>(0,q-1);
-	*color_dist = *that.color_dist;
-}
-
-State::~State(){
-	delete pos_dist;
-	delete color_dist;
 }
 
 double State::acc(){
@@ -33,8 +17,8 @@ double State::acc(){
 }
 
 void State::propose_move(){
-	pos_prop = (*pos_dist)(mtgen);
-	color_prop = (*color_dist)(mtgen);
+	pos_prop = pos_dist(mtgen);
+	color_prop = color_dist(mtgen);
 	moves_proposed++;
 	moves_proposed_total++;
 }

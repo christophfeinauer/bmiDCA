@@ -15,7 +15,6 @@ class MCRun{
 		MCRun(Env*,llu,tens3*);
 		tens3 * f_tens3 = NULL;
 		llu f_tens3_count = 0;
-
 };
 
 class MCMCRun : MCRun {
@@ -25,7 +24,14 @@ class MCMCRun : MCRun {
 		std::string ofile;
 		MCMCRun(Env*,llu, llu , llu, std::string);
 		void run();
-		void write_state_to_file();
-		void write_state_f_tens3();
+		void run_serial();
+		void write_state_to_file(int);
+		void write_state_f_tens3(int);
+		FILE* pfile;
+		void open_file_handle() { pfile = fopen(ofile.c_str(),"w");};
+		void close_file_handle() { fclose(pfile);}; 
+		int max_threads;
+		std::vector<llu> get_thread_loads();
 };
+
 #endif

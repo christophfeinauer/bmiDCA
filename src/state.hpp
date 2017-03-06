@@ -8,15 +8,13 @@ class State{
 	// RNG generator
 	std::mt19937_64 mtgen;
 	// RNG that chooses position in a move
-	std::uniform_int_distribution<int> * pos_dist;
+	std::uniform_int_distribution<int> pos_dist;
 	// RNG that chooses color in a move
-	std::uniform_int_distribution<int> * color_dist;
+	std::uniform_int_distribution<int> color_dist;
 	// Keep track of steps
 	unsigned long long moves_proposed = 0, moves_made = 0;
 	public:
 		State(int,int,int);
-		State(const State&);
-		~State();
 		void propose_move();
 		void make_move();
 		void reset_moves();

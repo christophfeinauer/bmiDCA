@@ -14,8 +14,8 @@ typedef boost::shared_ptr<tens2> tens2_ptr;
 // pure virtual base class for energy functions
 class Efu{
 	public:
-		virtual double get_energy(State& state) = 0;
-		virtual double get_move_endiff(State& state) = 0;
+		virtual double get_energy(State const & state) = 0;
+		virtual double get_move_endiff(State const & state) = 0;
 };
 
 
@@ -25,8 +25,8 @@ class Pairwise : public Efu{
 	public:
 		int len;
 		int q;
-		double get_energy(State& state);
-		double get_move_endiff(State& state);
+		double get_energy(State const & state);
+		double get_move_endiff(State const & state);
 		//Pairwise(int, int,int);
 		Pairwise(int,int,tens3_ptr,tens2_ptr);
 		Pairwise(std::string,std::string,std::string);
