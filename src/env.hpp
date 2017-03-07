@@ -5,7 +5,7 @@
 #include <vector>
 class Env{
 	double beta;
-	Efu  * efu;
+	std::shared_ptr<Efu> efu;
 	//RNG generator
 	std::mt19937_64 mtgen;
 	//Becomes RNG for [0,1] and an interger seed for the states
@@ -15,7 +15,7 @@ class Env{
 		int nr_states;
 		std::vector<State> state_vec;
 		//Env(State, Efu*, int);
-		Env(Efu*, int, int, int, int);
+		Env(std::shared_ptr<Efu>, int, int, int, int);
 		//Functions operating on state_ptr_vec[0]
 		bool decide_move();
 		void reset_moves();

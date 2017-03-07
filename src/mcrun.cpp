@@ -2,18 +2,30 @@
 #include <stdio.h>
 #include <omp.h>
 
-MCRun::MCRun(Env* env, llu nsamples) : env(env), nsamples(nsamples) {}
-MCRun::MCRun(Env* env, llu nsamples, tens3 * corr_tens3) : env(env), nsamples(nsamples), f_tens3(f_tens3) {}
-MCMCRun::MCMCRun(Env * env, llu nsamples, llu eq_steps, llu delta_steps, std::string ofile) : MCRun(env,nsamples), eq_steps(eq_steps), delta_steps(delta_steps), ofile(ofile), max_threads(omp_get_max_threads()) {}
+struct AccessError : public std::runtime_error{
+	AccessError(std::string const & message)
+		: std::runtime_error(message)
+	{}
+};
 
+MCRun::MCRun(std::shared_ptr<Env> env, llu nsamples, tens3 * f_tens3 = NULL) : env(env), nsamples(nsamples), f_tens3(f_tens3) {}
+
+MCMCRun::MCMCRun(std::shared_ptr<Env> env, llu nsamples, llu eq_steps, llu delta_steps, std::string ofile) : MCRun(env,nsamples), eq_steps(eq_steps), delta_steps(delta_steps), ofile(ofile), max_threads(omp_get_max_threads()) {}
+
+MCMCRun::MCMCRun(std::string infile, llu nsamples, llu eq_steps, llu delta_steps, std::string ofile): MCRun(nullptr,nsamples), eq_steps(eq_steps), delta_steps(delta_steps), ofile(ofile), max_threads(omp_get_max_threads()){
+
+	std::shared_ptr<Pairwise> pw(new Pairwise(infile,"J","h"));	
+	env.reset(new Env(pw,max_threads,pw->len,pw->q,rand()));
+}
 
 void MCMCRun::run(){
 	open_file_handle();
-	printf("Number of threads: %d\n",omp_get_max_threads());
+	printf("Number of threads: %d\n",max_threads);
 	#pragma omp parallel for
 	for (int state_nr = 0; state_nr<env->nr_states; ++state_nr)
 		for (llu eq_step = 0; eq_step < eq_steps; ++eq_step)
 			env->step(state_nr);
+	
 	std::vector<llu> thread_loads = get_thread_loads();
 	llu samples_done=0;
 	#pragma omp parallel for
@@ -45,14 +57,44 @@ std::vector<llu> MCMCRun::get_thread_loads(){
 }
 
 void MCMCRun::write_state_f_tens3(int i){
+	if (f_tens3==NULL)
+		throw AccessError("Trying to write to f_tens3, but f_tens3 not set");
 	State& state = env->state_vec[i];
-
 	int len = state.len;
 	llu l=0;
 	for (int i=0; i<len; ++i)
 		for (int j=i+1; j<len; ++j)
 			(*f_tens3)[state.seq[i]][state.seq[j]][l++]+=1.0f;
 	f_tens3_count++;
+}
+
+void MCMCRun::normalize_f_tens3(){
+	if (f_tens3==NULL)
+		throw AccessError("Trying to normalize f_tens3, but f_tens3 not set");
+	State& state = env->state_vec[0];
+	int len = state.len;
+	int q = state.q;
+	llu l=0;
+	for (int i=0; i<len; ++i)
+		for (int j=i+1; j<len; ++j)
+			for (int a=0; a<q; ++a)
+				for (int b=0; b<q; ++b)
+					(*f_tens3)[a][b][l++]/=f_tens3_count;
+
+}
+
+void MCMCRun::reset_f_tens3(){
+	if (f_tens3==NULL)
+		throw AccessError("Trying to reset f_tens3, but f_tens3 not set");
+	State& state = env->state_vec[0];
+	int len = state.len;
+	int q = state.q;
+	llu l=0;
+	for (int i=0; i<len; ++i)
+		for (int j=i+1; j<len; ++j)
+			for (int a=0; a<q; ++a)
+				for (int b=0; b<q; ++b)
+					(*f_tens3)[a][b][l++]/=0.0;
 }
 
 void MCMCRun::write_state_to_file(int i){

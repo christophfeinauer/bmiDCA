@@ -1,6 +1,6 @@
 #include "env.hpp"
 //simple constructor with all len/q/beta the same
-Env::Env(Efu * efu, int nr_states,int len, int q, int seed) : efu(efu), nr_states(nr_states), rdist_double(), rdist_int(){
+Env::Env(std::shared_ptr<Efu> efu, int nr_states,int len, int q, int seed) : efu(efu), nr_states(nr_states), rdist_double(), rdist_int(){
 	mtgen.seed(seed);
 	for (int i=0; i<nr_states; ++i){
 		state_vec.push_back(State(len,q,rdist_int(mtgen)));
