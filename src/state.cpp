@@ -33,3 +33,10 @@ void State::reset_moves(){
 	moves_made = 0;
 	moves_proposed = 0;
 }
+
+void State::reset_all_moves(){
+	moves_made = 0;
+	moves_proposed = 0;
+	moves_made_total=0;
+	moves_proposed_total=0;
+}

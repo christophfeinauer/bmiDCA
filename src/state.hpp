@@ -18,6 +18,7 @@ class State{
 		void propose_move();
 		void make_move();
 		void reset_moves();
+		void reset_all_moves();
 		double acc();
 		// variables for proposed moves
 		int pos_prop,color_prop = 0;

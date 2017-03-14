@@ -1,6 +1,16 @@
 #include "env.hpp"
-//simple constructor with all len/q/beta the same
+#include "omp.h"
+
 Env::Env(std::shared_ptr<Efu> efu, int nr_states,int len, int q, int seed) : efu(efu), nr_states(nr_states), rdist_double(), rdist_int(){
+	mtgen.seed(seed);
+	for (int i=0; i<nr_states; ++i){
+		state_vec.push_back(State(len,q,rdist_int(mtgen)));
+	}
+	beta=1.0;
+}
+
+Env::Env(int len, int q, int seed, std::string storage_order) : nr_states(omp_get_max_threads()), rdist_double(), rdist_int(){
+	efu.reset(new Pairwise(len,q,storage_order));
 	mtgen.seed(seed);
 	for (int i=0; i<nr_states; ++i){
 		state_vec.push_back(State(len,q,rdist_int(mtgen)));
@@ -45,7 +55,16 @@ void Env::reset_moves(int i){
 	state_vec[i].reset_moves();
 }
 
+void Env::reset_all_moves(int i){
+	state_vec[i].reset_all_moves();
+}
+
 void Env::reset_moves(){
 	for (int i=0; i<state_vec.size(); ++i)
 		state_vec[i].reset_moves();
+}
+
+void Env::reset_all_moves(){
+	for (int i=0; i<state_vec.size(); ++i)
+		state_vec[i].reset_all_moves();
 }

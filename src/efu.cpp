@@ -1,5 +1,5 @@
 #include "efu.hpp"
-#include "hdf5.h"
+#include "hdfio.hpp"
 #include <stdexcept>
 #include <string>
 
@@ -11,52 +11,33 @@ struct ReadError : public std::runtime_error{
 	{}
 };
 
-Pairwise::Pairwise(int len, int q, tens3_ptr coup_ptr, tens2_ptr fields_ptr ) : len(len), q(q), coup_ptr(coup_ptr), fields_ptr(fields_ptr) {
+Efu::Efu(std::string storage_order) : storage_order(storage_order) {};
+
+Pairwise::Pairwise(int len, int q,std::string storage_order) : Efu(storage_order), len(len), q(q) {
+
+	llu lenbn2 = (len*(len-1))/2;
+	if (storage_order == "fortran"){
+		coup_ptr.reset(new tens3(boost::extents[q][q][lenbn2],boost::fortran_storage_order()));
+		fields_ptr.reset(new tens2(boost::extents[q][len],boost::fortran_storage_order()));
+	}
+	else{
+		coup_ptr.reset(new tens3(boost::extents[q][q][lenbn2]));
+		fields_ptr.reset(new tens2(boost::extents[q][len]));
+	}
+	std::fill_n(coup_ptr->data(),coup_ptr->num_elements(), 0.0);
+	std::fill_n(fields_ptr->data(),fields_ptr->num_elements(), 0.0);
 	
+
 }
 
-//ATTENTION: This function expects a qxqxbinomial(N,2) column-major memory layout for couplings
-Pairwise::Pairwise(std::string fn, std::string coup_name, std::string fields_name){
-	hid_t hfid = H5Fopen(fn.c_str(),H5F_ACC_RDONLY,H5P_DEFAULT);		
-	// read couplings
-	hid_t dset = H5Dopen1(hfid,coup_name.c_str());
-	hid_t dspace = H5Dget_space(dset);
-	int ndims_coup = H5Sget_simple_extent_ndims(dspace);
-	if (ndims_coup!=3)
-		throw ReadError("HDF5Error: Dimensions of couplings ≠ 3");
-	printf("Reading couplings from HDF5 data..."); 
-	std::vector<hsize_t> dims_coup(ndims_coup,0);
-	H5Sget_simple_extent_dims(dspace,&dims_coup[0],NULL);
-	llu lenbn2 = (llu) dims_coup[0];
-	q = (int) dims_coup[1];
-	len = (int) (1+sqrt(1+8*lenbn2))/2;
-	if (dims_coup[2] != q )
-		throw ReadError("HDF5Error: Dimensions not consistent");
-	// the init is necessary because tens3_ptr coup_ptr(...) shadows the actual member
-	tens3_ptr coup_ptr_init(new tens3(boost::extents[q][q][lenbn2],boost::fortran_storage_order()));
-	coup_ptr = coup_ptr_init;
-	H5Dread(dset,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT,coup_ptr->data());
-	H5Sclose(dspace);
-	H5Dclose(dset);
-	printf("done\n");
-	// read fields
-	dset = H5Dopen1(hfid,fields_name.c_str());
-	dspace = H5Dget_space(dset);
-	int ndims_fields = H5Sget_simple_extent_ndims(dspace);
-	if (ndims_fields!=2)
-		throw ReadError("HDF5Error: Dimensions of fields ≠ 2");
-	printf("Reading fields from HDF5 data..."); 
-	std::vector<hsize_t> dims_fields(ndims_fields,0);
-	H5Sget_simple_extent_dims(dspace,&dims_fields[0],NULL);
-	if (dims_fields[0] != len || dims_fields[1] != q)
-		throw ReadError("HDF5Eror: Coupling- and fields-dimensions not consistent");
-	tens2_ptr fields_ptr_init(new tens2(boost::extents[q][len],boost::fortran_storage_order()));
-	fields_ptr = fields_ptr_init;
-	H5Dread(dset,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT,fields_ptr->data());
-	H5Sclose(dspace);
-	H5Dclose(dset);
-	H5Fclose(hfid);
-	printf("done\n");
+Pairwise::Pairwise(std::string fn, std::string coup_name, std::string fields_name, std::string storage_order) : Efu(storage_order) {
+
+	readtens3(fn,coup_ptr,coup_name,storage_order);
+	readtens2(fn,fields_ptr,fields_name,storage_order);
+	q = (int) fields_ptr->shape()[0];
+	len = (int) fields_ptr->shape()[1];
+	if (q!=coup_ptr->shape()[0] || q!=coup_ptr->shape()[1] || (len*(len-1))/2 != coup_ptr->shape()[2])
+		throw ReadError("Coupling and field dimensions non consistent");
 }
 
 double Pairwise::get_energy(State const & state){
@@ -96,6 +77,29 @@ double Pairwise::get_move_endiff(State const & state){
 		l++;
 	}
 	return endiff;
+}
+
+void Pairwise::add(std::vector<double> & to_add){
+	double* fields_flat = fields_ptr->data();
+	double* coup_flat = coup_ptr->data();
+	llu k = 0;
+	for (llu i=0; i<fields_ptr->num_elements(); ++i)
+		fields_flat[i]=fields_flat[i]+to_add[k++];
+	for (llu i=0; i<coup_ptr->num_elements(); ++i)
+		coup_flat[i]=coup_flat[i]+to_add[k++];
+	
+}
+
+void Pairwise::subtract_with_factor(std::vector<double> & g,double lambda){
+	double* fields_flat = fields_ptr->data();
+	double* coup_flat = coup_ptr->data();
+	llu k = 0;
+	for (llu i=0; i<fields_ptr->num_elements(); ++i)
+		g[k] = g[k] - lambda*fields_flat[i];
+	for (llu i=0; i<coup_ptr->num_elements(); ++i)
+		g[k] = g[k] - lambda*coup_flat[i];
+	
+
 }
 
 
