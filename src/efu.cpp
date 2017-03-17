@@ -26,8 +26,6 @@ Pairwise::Pairwise(int len, int q,std::string storage_order) : Efu(storage_order
 	}
 	std::fill_n(coup_ptr->data(),coup_ptr->num_elements(), 0.0);
 	std::fill_n(fields_ptr->data(),fields_ptr->num_elements(), 0.0);
-	
-
 }
 
 Pairwise::Pairwise(std::string fn, std::string coup_name, std::string fields_name, std::string storage_order) : Efu(storage_order) {
@@ -95,11 +93,9 @@ void Pairwise::subtract_with_factor(std::vector<double> & g,double lambda){
 	double* coup_flat = coup_ptr->data();
 	llu k = 0;
 	for (llu i=0; i<fields_ptr->num_elements(); ++i)
-		g[k] = g[k] - lambda*fields_flat[i];
+		g[k++] -= lambda*fields_flat[i];
 	for (llu i=0; i<coup_ptr->num_elements(); ++i)
-		g[k] = g[k] - lambda*coup_flat[i];
-	
-
+		g[k++] -= lambda*coup_flat[i];
 }
 
 

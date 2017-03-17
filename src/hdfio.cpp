@@ -1,4 +1,5 @@
 #include "hdfio.hpp"
+#include <boost/filesystem.hpp>
 
 struct ReadError : public std::runtime_error{
 	ReadError(std::string const & message)
@@ -66,10 +67,40 @@ void readtens2(std::string fn,std::shared_ptr<tens2>& tens2_ptr,std::string tens
 }
 
 void writetens3(std::string fn,std::shared_ptr<tens3>& tens3_ptr,std::string tens3_name, std::string storage_order){
+        
+        if (tens3_ptr->num_dimensions()!=3)
+                throw WriteError("dimensions of tens3 not 3");
+        hid_t hfid = H5Fcreate(fn.c_str(),H5F_ACC_TRUNC,H5P_DEFAULT, H5P_DEFAULT);              
+        hsize_t dims[3]; 
+        if (storage_order=="fortran")
+                for (int i=0; i<3; ++i)
+                        dims[i] = tens3_ptr->shape()[2-i];
+        else
+                for (int i=0;i<3;++i)
+                        dims[i] = tens3_ptr->shape()[i];
+        hid_t dspace = H5Screate_simple(3,dims,NULL);
+        hid_t dcpl = H5Pcreate (H5P_DATASET_CREATE);
+        herr_t status = H5Pset_layout (dcpl, H5D_CONTIGUOUS);
+        hid_t dset = H5Dcreate (hfid, tens3_name.c_str(), H5T_NATIVE_DOUBLE, dspace, H5P_DEFAULT, dcpl,H5P_DEFAULT);
+        printf("Writing %s to %s...",tens3_name.c_str(),fn.c_str()); 
+        H5Dwrite(dset,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT,tens3_ptr->data());
+        H5Pclose(dcpl);
+        H5Sclose(dspace);
+        H5Dclose(dset);
+        H5Fclose(hfid);
+        printf("done\n");
+
+}
+
+
+void addtens3(std::string fn,std::shared_ptr<tens3>& tens3_ptr,std::string tens3_name, std::string storage_order){
 	
 	if (tens3_ptr->num_dimensions()!=3)
 		throw WriteError("dimensions of tens3 not 3");
-	hid_t hfid = H5Fcreate(fn.c_str(),H5F_ACC_TRUNC,H5P_DEFAULT, H5P_DEFAULT);		
+	
+	if (!boost::filesystem::exists( fn )) throw WriteError("trying to add to non-existing file");
+
+	hid_t hfid = H5Fopen(fn.c_str(),H5F_ACC_RDWR, H5P_DEFAULT);		
 	hsize_t dims[3]; 
 	if (storage_order=="fortran")
 		for (int i=0; i<3; ++i)
@@ -81,7 +112,7 @@ void writetens3(std::string fn,std::shared_ptr<tens3>& tens3_ptr,std::string ten
 	hid_t dcpl = H5Pcreate (H5P_DATASET_CREATE);
 	herr_t status = H5Pset_layout (dcpl, H5D_CONTIGUOUS);
 	hid_t dset = H5Dcreate (hfid, tens3_name.c_str(), H5T_NATIVE_DOUBLE, dspace, H5P_DEFAULT, dcpl,H5P_DEFAULT);
-	printf("Writing %s from %s...",tens3_name.c_str(),fn.c_str()); 
+	printf("Writing %s to %s...",tens3_name.c_str(),fn.c_str()); 
 	H5Dwrite(dset,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT,tens3_ptr->data());
 	H5Pclose(dcpl);
 	H5Sclose(dspace);
@@ -90,3 +121,60 @@ void writetens3(std::string fn,std::shared_ptr<tens3>& tens3_ptr,std::string ten
 	printf("done\n");
 
 }
+
+void writetens2(std::string fn,std::shared_ptr<tens2>& tens2_ptr,std::string tens2_name, std::string storage_order){
+        
+        if (tens2_ptr->num_dimensions()!=2)
+                throw WriteError("dimensions of tens2 not 2");
+        hid_t hfid = H5Fcreate(fn.c_str(),H5F_ACC_TRUNC,H5P_DEFAULT, H5P_DEFAULT);              
+        hsize_t dims[2]; 
+        if (storage_order=="fortran")
+                for (int i=0; i<2; ++i)
+                        dims[i] = tens2_ptr->shape()[1-i];
+        else
+                for (int i=0;i<2;++i)
+                        dims[i] = tens2_ptr->shape()[i];
+        hid_t dspace = H5Screate_simple(2,dims,NULL);
+        hid_t dcpl = H5Pcreate (H5P_DATASET_CREATE);
+        herr_t status = H5Pset_layout (dcpl, H5D_CONTIGUOUS);
+        hid_t dset = H5Dcreate (hfid, tens2_name.c_str(), H5T_NATIVE_DOUBLE, dspace, H5P_DEFAULT, dcpl,H5P_DEFAULT);
+        printf("Writing %s to %s...",tens2_name.c_str(),fn.c_str()); 
+        H5Dwrite(dset,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT,tens2_ptr->data());
+        H5Pclose(dcpl);
+        H5Sclose(dspace);
+        H5Dclose(dset);
+        H5Fclose(hfid);
+        printf("done\n");
+
+}
+
+
+void addtens2(std::string fn,std::shared_ptr<tens2>& tens2_ptr,std::string tens2_name, std::string storage_order){
+	
+	if (tens2_ptr->num_dimensions()!=2)
+		throw WriteError("dimensions of tens2 not 2");
+	
+	if (!boost::filesystem::exists( fn )) throw WriteError("trying to add to non-existing file");
+
+	hid_t hfid = H5Fopen(fn.c_str(),H5F_ACC_RDWR, H5P_DEFAULT);		
+	hsize_t dims[2]; 
+	if (storage_order=="fortran")
+		for (int i=0; i<2; ++i)
+			dims[i] = tens2_ptr->shape()[1-i];
+	else
+		for (int i=0;i<2;++i)
+			dims[i] = tens2_ptr->shape()[i];
+	hid_t dspace = H5Screate_simple(2,dims,NULL);
+	hid_t dcpl = H5Pcreate (H5P_DATASET_CREATE);
+	herr_t status = H5Pset_layout (dcpl, H5D_CONTIGUOUS);
+	hid_t dset = H5Dcreate (hfid, tens2_name.c_str(), H5T_NATIVE_DOUBLE, dspace, H5P_DEFAULT, dcpl,H5P_DEFAULT);
+	printf("Writing %s to %s...",tens2_name.c_str(),fn.c_str()); 
+	H5Dwrite(dset,H5T_NATIVE_DOUBLE,H5S_ALL,H5S_ALL,H5P_DEFAULT,tens2_ptr->data());
+	H5Pclose(dcpl);
+	H5Sclose(dspace);
+	H5Dclose(dset);
+	H5Fclose(hfid);
+	printf("done\n");
+
+}
+

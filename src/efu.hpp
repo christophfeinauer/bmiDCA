@@ -20,15 +20,20 @@ class Efu{
 		llu nparameters;
 		virtual void add(std::vector<double>&) = 0;
 		virtual void subtract_with_factor(std::vector<double>&,double) = 0;
+		virtual tens3_ptr get_coup_ptr() = 0;
+		virtual tens2_ptr get_fields_ptr() = 0;
 		std::string storage_order = "fortran";
+
 		Efu(std::string);
 };
 
 
 class Pairwise : public Efu{
-	tens3_ptr coup_ptr;
-	tens2_ptr fields_ptr;
 	public:
+		tens3_ptr coup_ptr;
+		tens2_ptr fields_ptr;
+		tens3_ptr get_coup_ptr() {return coup_ptr;};
+		tens2_ptr get_fields_ptr() {return fields_ptr;};
 		int len;
 		int q;
 		double get_energy(State const & state);

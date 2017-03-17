@@ -43,8 +43,8 @@ class MCMCRun : public MCRun {
 		void reset_f2tens();
 		void reset() {reset_f3tens(); reset_f2tens(); env->reset_all_moves();};
 		FILE* pfile;
-		void open_file_handle() { pfile = fopen(ofile.c_str(),"w");};
-		void close_file_handle() { fclose(pfile);}; 
+		void open_file_handle() { pfile = (ofile == "") ? nullptr : fopen(ofile.c_str(),"w");};
+		void close_file_handle() { if (pfile != nullptr) fclose(pfile);}; 
 		int max_threads;
 		void report_threads();
 		std::vector<llu> get_thread_loads();

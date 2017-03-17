@@ -1,7 +1,7 @@
 CXX=g++
 CPPFLAGS= -L/usr/lib/x86_64-linux-gnu -std=c++11 -fopenmp -g -O3
 CFLAGS=-I/usr/include/hdf5/serial 
-LIB = -lhdf5_serial
+LIB = -lhdf5_serial -lboost_program_options -lboost_filesystem -lboost_system
 
 
 all: bmidca dca_sampler

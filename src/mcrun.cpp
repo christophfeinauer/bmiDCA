@@ -193,6 +193,8 @@ void MCMCRun::reset_f2tens(){
 }
 
 void MCMCRun::write_state_to_file(int i){
+	if (pfile==nullptr)
+		return;
 	State& state = env->state_vec[i];
 	double en = env->get_energy();
 	double acc = state.acc();
