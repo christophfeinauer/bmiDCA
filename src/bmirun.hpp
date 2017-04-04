@@ -16,7 +16,9 @@ class BmiRun{
 	std::shared_ptr<Env> env_ptr;
 	std::vector<double> gradient;
 	public:
-		BmiRun(std::string,std::string,std::string,std::string,double,llu,llu,llu,double,double,double,llu,std::string="fij",std::string="fi",std::string="fortran");
+		BmiRun(std::string,std::string,std::string,std::string,double,llu,llu,llu,double, double,double,double,llu,std::string,std::string,std::string, char = '\0', std::string="fortran");
+		void read_hdf5(std::string&, std::string&, std::string&, std::string = "fortran");
+		void read_fasta(std::string&, double, std::string="", char na_char='\0', std::string="fortran");
 		void make_gradient();
 		double get_squared_error();
 		void add_pseudocount();
@@ -24,12 +26,12 @@ class BmiRun{
 		void set_ptrs_from_mcrun(MCMCRun&);
 		llu lenbn2;
 		// Tensors holding freqs for the objective function
-		tens3_ptr f3tens_obj_ptr;
-		tens2_ptr f2tens_obj_ptr;
-		tens3_ptr f3tens_ptr;
-		tens2_ptr f2tens_ptr;
-		tens3_ptr coup_ptr;
-		tens2_ptr fields_ptr;
+		tens3_ptr f3tens_obj_ptr = nullptr;
+		tens2_ptr f2tens_obj_ptr = nullptr;
+		tens3_ptr f3tens_ptr = nullptr;
+		tens2_ptr f2tens_ptr = nullptr;
+		tens3_ptr coup_ptr = nullptr;
+		tens2_ptr fields_ptr = nullptr;
 
 		llu nsamples;
 		llu eq_steps;

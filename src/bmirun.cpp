@@ -1,6 +1,7 @@
 #include "bmirun.hpp"
 #include "mcrun.hpp"
 #include "hdfio.hpp"
+#include "msastruct.hpp"
 
 struct ReadError : public std::runtime_error{
 	ReadError(std::string const & message)
@@ -18,10 +19,13 @@ BmiRun::BmiRun(std::string fn,
 		llu delta_steps, 
 		double lambda,
 		double alpha,
+		double pc,
 		double theta,
 		llu max_runs,
 		std::string f3tens_name, 
 		std::string f2tens_name, 
+		std::string charmap,
+		char na_char,
 		std::string storage_order) 
 		: 
 		output(output),
@@ -33,35 +37,46 @@ BmiRun::BmiRun(std::string fn,
 		lambda(lambda),
 		alpha(alpha),
 		pc(pc),
-		max_runs(max_runs),
-		coup_ptr(nullptr),
-		fields_ptr(nullptr) {
+		max_runs(max_runs){
 
-	if (input_type=="hdf5"){
-		readtens3(fn,f3tens_obj_ptr,f3tens_name,storage_order);
-		readtens2(fn,f2tens_obj_ptr,f2tens_name,storage_order);
-		q = (int) f2tens_obj_ptr->shape()[0];
-		len = (int) f2tens_obj_ptr->shape()[1];
+	if (input_type=="hdf5") read_hdf5(fn, f3tens_name, f2tens_name, storage_order);
+	if (input_type=="fasta") read_fasta(fn,theta, charmap, na_char, storage_order);
+
+	q = (int) f2tens_obj_ptr->shape()[0];
+	len = (int) f2tens_obj_ptr->shape()[1];
 	
-		if (q!=f3tens_obj_ptr->shape()[0] 
-			|| q!=f3tens_obj_ptr->shape()[1] 
-			|| (len*(len-1))/2 != f3tens_obj_ptr->shape()[2])
-			throw ReadError("f3tens and f2tens dimensions non consistent");
+	if (q!=f3tens_obj_ptr->shape()[0] 
+		|| q!=f3tens_obj_ptr->shape()[1] 
+		|| (len*(len-1))/2 != f3tens_obj_ptr->shape()[2])
+		throw ReadError("f3tens and f2tens dimensions non consistent");
 	
-		llu lenbn2 = (len*(len-1))/2;
-		if (storage_order == "fortran"){
-			f3tens_ptr.reset(new tens3(boost::extents[q][q][lenbn2],boost::fortran_storage_order()));
-			f2tens_ptr.reset(new tens2(boost::extents[q][len],boost::fortran_storage_order()));
-		}
-		else{
-			f3tens_ptr.reset(new tens3(boost::extents[q][q][lenbn2]));
-			f2tens_ptr.reset(new tens2(boost::extents[q][len]));}
+	llu lenbn2 = (len*(len-1))/2;
+	if (storage_order == "fortran"){
+		f3tens_ptr.reset(new tens3(boost::extents[q][q][lenbn2],boost::fortran_storage_order()));
+		f2tens_ptr.reset(new tens2(boost::extents[q][len],boost::fortran_storage_order()));
 	}
+	else{
+		f3tens_ptr.reset(new tens3(boost::extents[q][q][lenbn2]));
+		f2tens_ptr.reset(new tens2(boost::extents[q][len]));
+	}
+
 	llu gradient_nelements = f3tens_ptr->num_elements()+f2tens_ptr->num_elements();
+
 	gradient.resize(gradient_nelements,0.0);	
+}
+
+void BmiRun::read_fasta(std::string& fn, double theta, std::string charmap, char na_char, std::string storage_order){
+
+	MSAStruct msa =  MSAStruct(fn,theta,charmap,na_char);
+	msa.get_frequencies(f3tens_obj_ptr, f2tens_obj_ptr, theta,storage_order);
 	
 }
 
+void BmiRun::read_hdf5(std::string& fn, std::string& f3tens_name, std::string& f2tens_name, std::string storage_order){
+
+	readtens3(fn,f3tens_obj_ptr,f3tens_name,storage_order);
+	readtens2(fn,f2tens_obj_ptr,f2tens_name,storage_order);
+}
 
 void BmiRun::make_gradient(){
 	
@@ -103,7 +118,7 @@ void BmiRun::add_pseudocount(){
 }
 
 void BmiRun::run(){
-
+	
 	if (pc!=0.0) add_pseudocount();
 	if (strgy=="adaptive") run_adaptive();
 
@@ -111,9 +126,9 @@ void BmiRun::run(){
 
 // adpative run - makes gradient steps and checks if the squared error
 // diminishes; if the squared error doesn't reach a new minimum for more than
-// 10 steps, it either reduces epsilon or increases sample size in our tests
-// this finds a good minimum very quickly, but then gets stuck
+// 10 steps, it either reduces epsilon or increases sample size
 void BmiRun::run_adaptive(){
+
 	MCMCRun mcrun(len,q,nsamples,eq_steps,delta_steps,"");
 	mcrun.set_ftens_ptrs(f3tens_ptr,f2tens_ptr);
 	set_ptrs_from_mcrun(mcrun);

@@ -1,0 +1,3 @@
+[submodule "src/bioio"]
+	path = src/bioio
+	url = https://github.com/dancooke/bioio
